@@ -1,0 +1,63 @@
+group 'rocks.inspectit.jaeger.bt'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'idea'
+
+// tag::repositories[]
+repositories {
+    mavenCentral()
+}
+// end::repositories[]
+
+// tag::dependencies[]
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+version = 1.0
+def mainClass = 'rocks.inspectit.jaeger.bt.Main'
+
+dependencies {
+    // https://mvnrepository.com/artifact/com.datastax.cassandra/cassandra-driver-core
+    compile group: 'com.datastax.cassandra', name: 'cassandra-driver-core', version: '3.3.2'
+    compile group: 'com.datastax.cassandra', name: 'cassandra-driver-mapping', version: '3.3.2'
+    compile 'org.projectlombok:lombok:1.16.18'
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.8.0-beta0'
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.8.0-beta0'
+    // https://mvnrepository.com/artifact/commons-cli/commons-cli
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+// end::dependencies[]
+
+// tag::jar[]
+jar {
+    baseName = 'rocks.inspectit.jaeger.bt'
+    version =  '0.1.0'
+}
+// end::jar[]
+
+// tag::task[]
+run {
+    main = mainClass
+    classpath = sourceSets.main.runtimeClasspath
+    if (project.hasProperty("appArgs")) {
+        args Eval.me(appArgs)
+    }
+}
+
+//create a single Jar with all dependencies
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'Jaeger business transaction analyzer',
+                'Implementation-Version': version,
+                'Main-Class': mainClass
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+// end::task[]
