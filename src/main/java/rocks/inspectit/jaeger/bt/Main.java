@@ -4,11 +4,12 @@ import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rocks.inspectit.jaeger.bt.analyzer.TracesAnalyzer;
+import rocks.inspectit.jaeger.bt.analyzer.TracesAnalyzerElasticsearch;
 import rocks.inspectit.jaeger.bt.connectors.IDatabase;
 import rocks.inspectit.jaeger.bt.connectors.cassandra.Cassandra;
-import rocks.inspectit.jaeger.bt.model.trace.Trace;
+import rocks.inspectit.jaeger.bt.connectors.elasticsearch.Elasticsearch;
+import rocks.inspectit.jaeger.bt.model.trace.elasticsearch.Trace;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
@@ -19,51 +20,59 @@ public class Main {
     private static final String SERVICE_NAME = "service";
     private static final String START_TIME = "start";
     private static final String END_TIME = "end";
+    private static final String FOLLOW = "follow";
+    private static final String DATABASE = "database";
+    private static final String CASSANDRA = "cassandra";
+    private static final String ELASTICSEARCH = "elasticsearch";
 
     public static void main(String[] args) {
         final CommandLine cmd = parseArguments(args);
         String dbHost = cmd.getOptionValue(DB_HOST);
         String dbKeyspace = cmd.getOptionValue(DB_KEYSPACE);
         String serviceName = cmd.getOptionValue(SERVICE_NAME);
+        IDatabase database = null;
+
+        switch (cmd.getOptionValue(DATABASE)) {
+            case CASSANDRA:
+                database = new Cassandra(dbHost, dbKeyspace);
+                logger.info("Using database " + CASSANDRA);
+                break;
+            case ELASTICSEARCH:
+                database = new Elasticsearch(dbHost, dbKeyspace);
+                logger.info("Using database " + ELASTICSEARCH);
+                break;
+            default:
+                logger.error(cmd.getOptionValue(DATABASE) + " is not a known database!");
+                System.exit(1);
+        }
+
         Long startTime = null;
         Long endTime = null;
         try {
             startTime = Long.parseLong(cmd.getOptionValue(START_TIME));
             endTime = Long.parseLong(cmd.getOptionValue(END_TIME));
         } catch (NumberFormatException e) {
-
+            // Do nothing
         }
-
-        IDatabase database = new Cassandra(dbHost, dbKeyspace);
 
         List<Trace> traces;
 
         if (startTime != null && endTime != null) {
-            traces = database.getTraces(startTime, endTime);
+            traces = database.getTraces(serviceName, startTime, endTime);
         } else if (startTime != null) {
-            traces = database.getTraces(startTime);
+            traces = database.getTraces(serviceName, startTime);
         } else {
-            traces = database.getTraces();
+            traces = database.getTraces(serviceName);
         }
 
-        logger.info("Number of traces fetched: " + traces.size());
+        logger.info("Number of Traces to analyze: " + traces.size());
 
-        List<Trace> tracesToAnalyze = new ArrayList<>();
-
-        traces.forEach(trace -> {
-            if (trace.getProcess().getServiceName().equals(serviceName)) {
-                tracesToAnalyze.add(trace);
-            }
-        });
-
-        logger.info("Number of Traces to analyze: " + tracesToAnalyze.size());
-
-        TracesAnalyzer tracesAnalyzer = new TracesAnalyzer(tracesToAnalyze);
+        TracesAnalyzer tracesAnalyzer = new TracesAnalyzerElasticsearch(traces);
         tracesAnalyzer.findBusinessTransactions();
 
         logger.info("Finished analyzing Traces");
 
-        database.saveTraces(tracesToAnalyze);
+        database.saveTraces(traces);
 
         logger.info("Updated Traces in database");
 
@@ -92,6 +101,14 @@ public class Main {
         Option endTime = new Option("e", END_TIME, true, "The end time");
         endTime.setRequired(false);
         options.addOption(endTime);
+
+        Option follow = new Option("f", FOLLOW, true, "Poll every x seconds");
+        follow.setRequired(false);
+        options.addOption(follow);
+
+        Option database = new Option("d", DATABASE, true, "The database to use (cassandra, elasticsearch)");
+        database.setRequired(true);
+        options.addOption(database);
 
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();

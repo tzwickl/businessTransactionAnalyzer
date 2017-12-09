@@ -1,14 +1,13 @@
 package rocks.inspectit.jaeger.bt.connectors;
 
-import rocks.inspectit.jaeger.bt.model.trace.Trace;
-
+import java.io.IOException;
 import java.util.List;
 
-public interface IDatabase {
-    void closeConnection();
+public interface IDatabase<Trace> {
+    void closeConnection() throws IOException;
 
-    List<Trace> getTraces();
-    List<Trace> getTraces(Long startTime);
-    List<Trace> getTraces(Long startTime, Long endTime);
+    List<Trace> getTraces(final String serviceName);
+    List<Trace> getTraces(final String serviceName, Long startTime);
+    List<Trace> getTraces(final String serviceName, Long startTime, Long endTime);
     void saveTraces(List<Trace> traces);
 }

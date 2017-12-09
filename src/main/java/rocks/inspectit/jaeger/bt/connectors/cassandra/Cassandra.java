@@ -11,11 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rocks.inspectit.jaeger.bt.connectors.Constants;
 import rocks.inspectit.jaeger.bt.connectors.IDatabase;
-import rocks.inspectit.jaeger.bt.model.trace.Trace;
+import rocks.inspectit.jaeger.bt.model.trace.cassandra.Trace;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class Cassandra implements IDatabase {
+public class Cassandra implements IDatabase<Trace> {
     private static final Logger logger = LoggerFactory.getLogger(Cassandra.class);
 
     private Cluster cluster;
@@ -23,39 +24,59 @@ public class Cassandra implements IDatabase {
     private String keyspace;
 
     // Mappers
-    MappingManager manager;
-    Mapper<Trace> tracesMapper;
+    private MappingManager manager;
+    private Mapper<Trace> tracesMapper;
 
     public Cassandra(final String host, final String keyspace) {
         this.keyspace = keyspace;
         this.cluster = Cluster.builder().addContactPoint(host).build();
         this.session = this.cluster.connect(keyspace);
         this.manager = new MappingManager(session);
+        this.createMappers();
+    }
+
+    private void createMappers() {
         this.tracesMapper = manager.mapper(Trace.class);
     }
 
     @Override
-    public List<Trace> getTraces() {
+    public List<Trace> getTraces(final String serviceName) {
         Statement query = QueryBuilder.select().from(Constants.TRACES.getValue());
 
         Result<Trace> traces = this.tracesMapper.map(this.session.execute(query));
 
-        return traces.all();
+        List<Trace> tracesToAnalyze = new ArrayList<>();
+
+        traces.forEach(trace -> {
+            if (trace.getProcess().getServiceName().equals(serviceName)) {
+                tracesToAnalyze.add(trace);
+            }
+        });
+
+        return tracesToAnalyze;
     }
 
     @Override
-    public List<Trace> getTraces(Long startTime) {
+    public List<Trace> getTraces(final String serviceName, Long startTime) {
         Statement query = QueryBuilder.select().from(Constants.TRACES.getValue())
                 .where(QueryBuilder.gt(Constants.START_TIME.getValue(), startTime))
                 .allowFiltering();
 
         Result<Trace> traces = this.tracesMapper.map(this.session.execute(query));
 
-        return traces.all();
+        List<Trace> tracesToAnalyze = new ArrayList<>();
+
+        traces.forEach(trace -> {
+            if (trace.getProcess().getServiceName().equals(serviceName)) {
+                tracesToAnalyze.add(trace);
+            }
+        });
+
+        return tracesToAnalyze;
     }
 
     @Override
-    public List<Trace> getTraces(Long startTime, Long endTime) {
+    public List<Trace> getTraces(final String serviceName, Long startTime, Long endTime) {
         Statement query = QueryBuilder.select().from(Constants.TRACES.getValue())
                 .where(QueryBuilder.gt(Constants.START_TIME.getValue(), startTime))
                 .and(QueryBuilder.lt(Constants.START_TIME.getValue(), endTime))
@@ -63,7 +84,15 @@ public class Cassandra implements IDatabase {
 
         Result<Trace> traces = this.tracesMapper.map(this.session.execute(query));
 
-        return traces.all();
+        List<Trace> tracesToAnalyze = new ArrayList<>();
+
+        traces.forEach(trace -> {
+            if (trace.getProcess().getServiceName().equals(serviceName)) {
+                tracesToAnalyze.add(trace);
+            }
+        });
+
+        return tracesToAnalyze;
     }
 
     @Override
