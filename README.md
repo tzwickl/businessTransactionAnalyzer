@@ -10,7 +10,7 @@ usage: jaegerBusinessTransactionDetector
  -b,--start <arg>      The start time in seconds (inclusive)
  -d,--database <arg>   The database to use (cassandra, elasticsearch)
  -e,--end <arg>        The end time in seconds (inclusive)
- -f,--follow <arg>     Poll every x seconds
+ -f,--follow <arg>     Poll every <arg> seconds
  -h,--host <arg>       The database host
  -k,--keyspace <arg>   The database keyspace name
  -s,--service <arg>    The service name to validate

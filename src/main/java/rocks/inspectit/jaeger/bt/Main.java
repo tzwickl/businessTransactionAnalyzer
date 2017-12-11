@@ -55,6 +55,31 @@ public class Main {
             // Do nothing
         }
 
+        Long follow = null;
+        try {
+            follow = Long.parseLong(cmd.getOptionValue(FOLLOW)) * 1000;
+        } catch (NumberFormatException e) {
+            // Do nothing
+        }
+
+        if (follow == null) {
+            run(database, serviceName, startTime, endTime);
+        } else {
+            try {
+                while (true) {
+                    startTime = run(database, serviceName, startTime, null) + 1;
+                    Thread.sleep(follow);
+                }
+            } catch (InterruptedException e) {
+                // Do nothing
+            }
+        }
+
+        System.exit(0);
+    }
+
+    private static Long run(IDatabase database, String serviceName, Long startTime, Long endTime) {
+        logger.info("###############_START_###############");
         List<Trace> traces;
 
         if (startTime != null && endTime != null) {
@@ -69,7 +94,8 @@ public class Main {
 
         if (traces.isEmpty()) {
             logger.warn("No Traces found to analyze!");
-            System.exit(0);
+            logger.info("###############_END_#################");
+            return startTime;
         }
 
         TracesAnalyzer tracesAnalyzer = new TracesAnalyzerElasticsearch(traces);
@@ -80,8 +106,9 @@ public class Main {
         database.saveTraces(traces);
 
         logger.info("Updated Traces in database");
+        logger.info("###############_END_#################");
 
-        System.exit(0);
+        return tracesAnalyzer.getLatestTimestamp();
     }
 
     private static CommandLine parseArguments(String[] args) {
@@ -107,7 +134,7 @@ public class Main {
         endTime.setRequired(false);
         options.addOption(endTime);
 
-        Option follow = new Option("f", FOLLOW, true, "Poll every x seconds");
+        Option follow = new Option("f", FOLLOW, true, "Poll every <arg> seconds");
         follow.setRequired(false);
         options.addOption(follow);
 

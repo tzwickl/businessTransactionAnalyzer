@@ -38,6 +38,10 @@ public class TracesAnalyzerElasticsearch implements TracesAnalyzer {
         logger.info("Detected business transactions: " + Arrays.deepToString(businessTransactions.toArray()));
     }
 
+    public Long getLatestTimestamp() {
+        return this.traces.stream().max(Comparator.comparing(Trace::getStartTime)).get().getStartTime();
+    }
+
     private String findBusinessTransactionName(Trace trace) {
         if (trace.getParentId().equals("0")) {
             return trace.getOperationName();
