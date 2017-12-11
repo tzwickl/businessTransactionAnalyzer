@@ -65,6 +65,10 @@ public class Main {
         if (follow == null) {
             run(database, serviceName, startTime, endTime);
         } else {
+            if (startTime == null) {
+                startTime = System.currentTimeMillis() * 1000;
+                logger.info("Timestamp: " + startTime);
+            }
             try {
                 while (true) {
                     startTime = run(database, serviceName, startTime, null) + 1;
