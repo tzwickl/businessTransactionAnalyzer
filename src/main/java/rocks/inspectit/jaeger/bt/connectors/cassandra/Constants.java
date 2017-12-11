@@ -1,9 +1,8 @@
-package rocks.inspectit.jaeger.bt.connectors;
+package rocks.inspectit.jaeger.bt.connectors.cassandra;
 
 public enum Constants {
     TRACES("traces"),
-    START_TIME("start_time"),
-    SERVICE_NAME_PATH("process.serviceName");
+    START_TIME("start_time");
 
     private String value;
 

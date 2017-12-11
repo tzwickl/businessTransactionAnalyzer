@@ -2,8 +2,6 @@ package rocks.inspectit.jaeger.bt.connectors.elasticsearch;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHost;
-import org.elasticsearch.ElasticsearchException;
-import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -11,26 +9,23 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rocks.inspectit.jaeger.bt.connectors.Constants;
 import rocks.inspectit.jaeger.bt.connectors.IDatabase;
 import rocks.inspectit.jaeger.bt.model.trace.elasticsearch.Trace;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Elasticsearch implements IDatabase<Trace> {
     private static final Logger logger = LoggerFactory.getLogger(Elasticsearch.class);
@@ -60,6 +55,10 @@ public class Elasticsearch implements IDatabase<Trace> {
         searchRequest.source(searchSourceBuilder);
         searchRequest.scroll(TimeValue.timeValueMinutes(1L));
 
+        return this.fetchTraces(searchRequest);
+    }
+
+    private List<Trace> fetchTraces(SearchRequest searchRequest) {
         List<Trace> traces = new ArrayList<>();
         try {
             SearchResponse searchResponse = this.client.search(searchRequest);
@@ -80,8 +79,7 @@ public class Elasticsearch implements IDatabase<Trace> {
                 scrollId = searchResponse.getScrollId();
                 hits = searchResponse.getHits();
             }
-
-        } catch (IOException | ElasticsearchException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -90,12 +88,30 @@ public class Elasticsearch implements IDatabase<Trace> {
 
     @Override
     public List<Trace> getTraces(final String serviceName, Long startTime) {
-        return null;
+        SearchRequest searchRequest = new SearchRequest(this.doc);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+        boolQueryBuilder.must(QueryBuilders.matchQuery(Constants.SERVICE_NAME_PATH.getValue(), serviceName));
+        boolQueryBuilder.must(QueryBuilders.rangeQuery(Constants.START_TIME.getValue()).gte(startTime));
+        searchSourceBuilder.query(boolQueryBuilder);
+        searchRequest.source(searchSourceBuilder);
+        searchRequest.scroll(TimeValue.timeValueMinutes(1L));
+
+        return this.fetchTraces(searchRequest);
     }
 
     @Override
     public List<Trace> getTraces(final String serviceName, Long startTime, Long endTime) {
-        return null;
+        SearchRequest searchRequest = new SearchRequest(this.doc);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+        boolQueryBuilder.must(QueryBuilders.matchQuery(Constants.SERVICE_NAME_PATH.getValue(), serviceName));
+        boolQueryBuilder.must(QueryBuilders.rangeQuery(Constants.START_TIME.getValue()).gte(startTime).lte(endTime));
+        searchSourceBuilder.query(boolQueryBuilder);
+        searchRequest.source(searchSourceBuilder);
+        searchRequest.scroll(TimeValue.timeValueMinutes(1L));
+
+        return this.fetchTraces(searchRequest);
     }
 
     @Override

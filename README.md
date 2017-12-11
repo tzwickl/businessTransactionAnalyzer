@@ -7,17 +7,21 @@ The tag is called `business_transaction` and can be found in the `tags` field wi
 Available arguments to pass to the application:
 ```
 usage: jaegerBusinessTransactionDetector
- -b,--start <arg>      The start time
- -e,--end <arg>        The end time
+ -b,--start <arg>      The start time in seconds (inclusive)
+ -d,--database <arg>   The database to use (cassandra, elasticsearch)
+ -e,--end <arg>        The end time in seconds (inclusive)
+ -f,--follow <arg>     Poll every x seconds
  -h,--host <arg>       The database host
  -k,--keyspace <arg>   The database keyspace name
  -s,--service <arg>    The service name to validate
 ```
 
+Mandatory arguments are: `h, k, s, d`
+
 ## Gradle 
 Example of how to run the application with gradle:
 
-`./gradlew run -PappArgs="['-hlocalhost', '-kjaeger_v1_test', '-sAppFin']"`
+`./gradlew run -PappArgs="['-hlocalhost', '-kjaeger-span*', '-sAppFin', '-delasticsearch']"`
 
 ## Jar
 

@@ -49,8 +49,8 @@ public class Main {
         Long startTime = null;
         Long endTime = null;
         try {
-            startTime = Long.parseLong(cmd.getOptionValue(START_TIME));
-            endTime = Long.parseLong(cmd.getOptionValue(END_TIME));
+            startTime = Long.parseLong(cmd.getOptionValue(START_TIME)) * 1000000;
+            endTime = Long.parseLong(cmd.getOptionValue(END_TIME)) * 1000000;
         } catch (NumberFormatException e) {
             // Do nothing
         }
@@ -66,6 +66,11 @@ public class Main {
         }
 
         logger.info("Number of Traces to analyze: " + traces.size());
+
+        if (traces.isEmpty()) {
+            logger.warn("No Traces found to analyze!");
+            System.exit(0);
+        }
 
         TracesAnalyzer tracesAnalyzer = new TracesAnalyzerElasticsearch(traces);
         tracesAnalyzer.findBusinessTransactions();
@@ -94,11 +99,11 @@ public class Main {
         service.setRequired(true);
         options.addOption(service);
 
-        Option startTime = new Option("b", START_TIME, true, "The start time");
+        Option startTime = new Option("b", START_TIME, true, "The start time in seconds (inclusive)");
         startTime.setRequired(false);
         options.addOption(startTime);
 
-        Option endTime = new Option("e", END_TIME, true, "The end time");
+        Option endTime = new Option("e", END_TIME, true, "The end time in seconds (inclusive)");
         endTime.setRequired(false);
         options.addOption(endTime);
 

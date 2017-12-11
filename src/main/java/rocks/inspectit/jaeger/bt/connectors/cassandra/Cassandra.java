@@ -9,7 +9,6 @@ import com.datastax.driver.mapping.MappingManager;
 import com.datastax.driver.mapping.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rocks.inspectit.jaeger.bt.connectors.Constants;
 import rocks.inspectit.jaeger.bt.connectors.IDatabase;
 import rocks.inspectit.jaeger.bt.model.trace.cassandra.Trace;
 
