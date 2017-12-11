@@ -23,7 +23,6 @@ public class TracesAnalyzerCassandra implements TracesAnalyzer {
     }
 
     public void findBusinessTransactions() {
-        ;
         final Set<String> businessTransactions = new HashSet<>();
 
         this.traces.forEach(trace -> {

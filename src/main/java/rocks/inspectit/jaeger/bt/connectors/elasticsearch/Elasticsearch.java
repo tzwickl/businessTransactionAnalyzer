@@ -37,14 +37,10 @@ public class Elasticsearch implements IDatabase<Trace> {
 
     private final RestHighLevelClient client;
     private final String doc;
-    private final Map<String, String> ids;
-    private final Map<String, String> types;
     private final ObjectMapper objectMapper;
 
     public Elasticsearch(final String host, final String doc) {
         this.doc = doc;
-        this.ids = new HashMap<>();
-        this.types = new HashMap<>();
         this.objectMapper = new ObjectMapper();
         this.client = new RestHighLevelClient(
                 RestClient.builder(
@@ -73,9 +69,10 @@ public class Elasticsearch implements IDatabase<Trace> {
             while (hits.getHits().length > 0) {
                 for (SearchHit hit : hits) {
                     Trace trace = this.objectMapper.readValue(hit.getSourceAsString(), Trace.class);
+                    trace.setUUID(hit.getId());
+                    trace.setType(hit.getType());
+                    trace.setIndexName(hit.getIndex());
                     traces.add(trace);
-                    this.ids.put(trace.getSpanId(), hit.getId());
-                    this.types.put(trace.getSpanId(), hit.getType());
                 }
                 SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId);
                 scrollRequest.scroll(TimeValue.timeValueMinutes(1L));
@@ -126,7 +123,7 @@ public class Elasticsearch implements IDatabase<Trace> {
 
     private UpdateRequest createUpdateRequest(Trace trace) {
         try {
-            UpdateRequest request = new UpdateRequest(this.doc, this.types.get(trace.getSpanId()), this.ids.get(trace.getSpanId()));
+            UpdateRequest request = new UpdateRequest(trace.getIndexName(), trace.getType(), trace.getUUID());
             String json = this.objectMapper.writeValueAsString(trace);
             request.doc(json, XContentType.JSON);
             return request;

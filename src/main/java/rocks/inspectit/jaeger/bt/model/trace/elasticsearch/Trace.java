@@ -1,5 +1,6 @@
 package rocks.inspectit.jaeger.bt.model.trace.elasticsearch;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -37,4 +38,12 @@ public class Trace {
     String warnings;
     @JsonProperty("startTimeMillis")
     Long startTimeMillis;
+
+    // Elasticsearch properties
+    @JsonIgnore
+    String UUID;
+    @JsonIgnore
+    String type;
+    @JsonIgnore
+    String indexName;
 }

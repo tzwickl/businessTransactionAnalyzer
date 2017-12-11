@@ -44,7 +44,7 @@ public class TracesAnalyzerElasticsearch implements TracesAnalyzer {
         } else {
             Trace parentTrace = this.getParentSpan(trace);
             if (parentTrace == null) {
-                return null;
+                return "";
             }
             return this.findBusinessTransactionName(parentTrace);
         }
