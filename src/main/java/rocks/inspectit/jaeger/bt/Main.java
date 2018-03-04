@@ -3,9 +3,8 @@ package rocks.inspectit.jaeger.bt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
-import rocks.inspectit.jaeger.bt.model.trace.config.Configuration;
+import rocks.inspectit.jaeger.bt.model.config.Configuration;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;

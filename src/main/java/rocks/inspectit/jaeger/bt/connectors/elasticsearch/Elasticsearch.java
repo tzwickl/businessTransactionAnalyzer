@@ -21,8 +21,8 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rocks.inspectit.jaeger.bt.connectors.IDatabase;
-import rocks.inspectit.jaeger.bt.model.trace.config.ElasticSearchConfig;
-import rocks.inspectit.jaeger.bt.model.trace.elasticsearch.Trace;
+import rocks.inspectit.jaeger.model.config.ElasticSearchConfig;
+import rocks.inspectit.jaeger.model.trace.elasticsearch.Trace;
 
 import java.io.IOException;
 import java.util.ArrayList;

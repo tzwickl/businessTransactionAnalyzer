@@ -2,17 +2,17 @@ package rocks.inspectit.jaeger.bt.analyzer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rocks.inspectit.jaeger.bt.model.trace.elasticsearch.Trace;
-import rocks.inspectit.jaeger.bt.model.trace.elasticsearch.TraceKeyValue;
+import rocks.inspectit.jaeger.model.trace.kafka.Trace;
+import rocks.inspectit.jaeger.model.trace.kafka.TraceKeyValue;
 
 import java.util.*;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
+import static rocks.inspectit.jaeger.model.Constants.BT_TAG;
 
 public class TracesAnalyzerElasticsearch implements TracesAnalyzer {
     private static final Logger logger = LoggerFactory.getLogger(TracesAnalyzerElasticsearch.class);
-    private final static String BT = "businessTransaction";
     final Map<String, Trace> spans;
     private final List<Trace> traces;
 
@@ -67,7 +67,7 @@ public class TracesAnalyzerElasticsearch implements TracesAnalyzer {
         List<TraceKeyValue> tags = trace.getTags();
 
         TraceKeyValue businessTransactionTag = new TraceKeyValue();
-        businessTransactionTag.setKey(BT);
+        businessTransactionTag.setKey(BT_TAG);
         businessTransactionTag.setType("string");
         businessTransactionTag.setValue(businessTransaction);
 
@@ -75,7 +75,7 @@ public class TracesAnalyzerElasticsearch implements TracesAnalyzer {
             tags.add(businessTransactionTag);
         } else {
             Stream<TraceKeyValue> foundTags = tags.stream().filter(tag -> {
-                return tag.getKey().equals(BT);
+                return tag.getKey().equals(BT_TAG);
             });
             List<TraceKeyValue> matchedTags = foundTags.collect(toList());
             if (matchedTags.size() > 0) {

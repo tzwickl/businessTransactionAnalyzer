@@ -1,6 +1,5 @@
 package rocks.inspectit.jaeger.bt.connectors.kafka;
 
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -9,8 +8,8 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rocks.inspectit.jaeger.bt.connectors.IDatabase;
-import rocks.inspectit.jaeger.bt.model.trace.config.KafkaConfig;
-import rocks.inspectit.jaeger.bt.model.trace.elasticsearch.Trace;
+import rocks.inspectit.jaeger.model.config.KafkaConfig;
+import rocks.inspectit.jaeger.model.trace.kafka.Trace;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,7 +40,7 @@ public class Kafka implements IDatabase<Trace> {
         props.put("linger.ms", 1);
         props.put("buffer.memory", 33554432);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer", "rocks.inspectit.jaeger.bt.model.trace.kafka.TraceSerializer");
+        props.put("value.serializer", "rocks.inspectit.jaeger.model.trace.kafka.TraceSerializer");
         producer = new KafkaProducer<>(props);
     }
 
@@ -54,7 +53,7 @@ public class Kafka implements IDatabase<Trace> {
         props.put("session.timeout.ms", "30000");
         props.put("auto.offset.reset", "earliest");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put("value.deserializer", "rocks.inspectit.jaeger.bt.model.trace.kafka.TraceDeserializer");
+        props.put("value.deserializer", "rocks.inspectit.jaeger.model.trace.kafka.TraceDeserializer");
         consumer = new KafkaConsumer<>(props);
         consumer.subscribe(Arrays.asList(kafkaConfig.getInputTopic()));
     }

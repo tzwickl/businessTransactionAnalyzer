@@ -2,8 +2,8 @@ package rocks.inspectit.jaeger.bt.analyzer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rocks.inspectit.jaeger.bt.model.trace.cassandra.Trace;
-import rocks.inspectit.jaeger.bt.model.trace.cassandra.TraceKeyValue;
+import rocks.inspectit.jaeger.model.trace.cassandra.Trace;
+import rocks.inspectit.jaeger.model.trace.cassandra.TraceKeyValue;
 
 import java.util.*;
 import java.util.stream.Stream;

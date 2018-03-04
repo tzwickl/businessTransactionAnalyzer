@@ -8,17 +8,17 @@ import rocks.inspectit.jaeger.bt.connectors.IDatabase;
 import rocks.inspectit.jaeger.bt.connectors.cassandra.Cassandra;
 import rocks.inspectit.jaeger.bt.connectors.elasticsearch.Elasticsearch;
 import rocks.inspectit.jaeger.bt.connectors.kafka.Kafka;
-import rocks.inspectit.jaeger.bt.model.trace.config.Configuration;
-import rocks.inspectit.jaeger.bt.model.trace.elasticsearch.Trace;
+import rocks.inspectit.jaeger.model.config.Configuration;
+import rocks.inspectit.jaeger.model.trace.kafka.Trace;
 
 import java.util.List;
 
+import static rocks.inspectit.jaeger.model.config.CassandraConfig.CASSANDRA;
+import static rocks.inspectit.jaeger.model.config.ElasticSearchConfig.ELASTICSEARCH;
+import static rocks.inspectit.jaeger.model.config.KafkaConfig.KAFKA;
+
 public class Analyzer {
     private static final Logger logger = LoggerFactory.getLogger(Analyzer.class);
-
-    private static final String CASSANDRA = "cassandra";
-    private static final String ELASTICSEARCH = "elasticsearch";
-    private static final String KAFKA = "kafka";
 
     private final Configuration configuration;
 
@@ -29,21 +29,21 @@ public class Analyzer {
     public int start() {
         IDatabase database = null;
 
-        switch (configuration.getDatabase()) {
+        switch (configuration.getInput()) {
             case CASSANDRA:
-                database = new Cassandra(configuration.getCassandraConfig());
+                database = new Cassandra(configuration.getCassandra());
                 logger.info("Using database " + CASSANDRA);
                 break;
             case ELASTICSEARCH:
-                database = new Elasticsearch(configuration.getElasticSearchConfig());
+                database = new Elasticsearch(configuration.getElasticsearch());
                 logger.info("Using database " + ELASTICSEARCH);
                 break;
             case KAFKA:
-                database = new Kafka(configuration.getServiceName(), configuration.getKafkaConfig());
+                database = new Kafka(configuration.getServiceName(), configuration.getKafka());
                 logger.info("Using database " + KAFKA);
                 break;
             default:
-                logger.error(configuration.getDatabase() + " is not a known database!");
+                logger.error(configuration.getInput() + " is not a known database!");
                 return 1;
         }
 
