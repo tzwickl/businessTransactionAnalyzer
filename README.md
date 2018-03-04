@@ -40,7 +40,7 @@ cassandra:
  host: localhost
  keyspace: traces
 
-database: kafka
+input: kafka
 serviceName: AppFin
 
 startTime: 1512833158
