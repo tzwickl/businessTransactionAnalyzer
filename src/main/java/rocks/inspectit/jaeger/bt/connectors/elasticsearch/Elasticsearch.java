@@ -21,6 +21,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rocks.inspectit.jaeger.bt.connectors.IDatabase;
+import rocks.inspectit.jaeger.bt.model.trace.config.ElasticSearchConfig;
 import rocks.inspectit.jaeger.bt.model.trace.elasticsearch.Trace;
 
 import java.io.IOException;
@@ -31,15 +32,15 @@ public class Elasticsearch implements IDatabase<Trace> {
     private static final Logger logger = LoggerFactory.getLogger(Elasticsearch.class);
 
     private final RestHighLevelClient client;
-    private final String doc;
     private final ObjectMapper objectMapper;
+    private final String doc;
 
-    public Elasticsearch(final String host, final String doc) {
-        this.doc = doc;
+    public Elasticsearch(ElasticSearchConfig config) {
+        this.doc = config.getDoc();
         this.objectMapper = new ObjectMapper();
         this.client = new RestHighLevelClient(
                 RestClient.builder(
-                        new HttpHost(host, 9200, "http")));
+                        new HttpHost(config.getHost(), config.getPort(), config.getScheme())));
     }
 
     @Override
@@ -128,7 +129,7 @@ public class Elasticsearch implements IDatabase<Trace> {
                 for (BulkItemResponse bulkItemResponse : bulkResponse) {
                     if (bulkItemResponse.isFailed()) {
                         BulkItemResponse.Failure failure = bulkItemResponse.getFailure();
-                        logger.error("Failure while updating trace: "  + failure.toString());
+                        logger.error("Failure while updating trace: " + failure.toString());
                     }
                 }
             }

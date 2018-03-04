@@ -12,10 +12,9 @@ import static java.util.stream.Collectors.toList;
 
 public class TracesAnalyzerElasticsearch implements TracesAnalyzer {
     private static final Logger logger = LoggerFactory.getLogger(TracesAnalyzerElasticsearch.class);
-
-    private final List<Trace> traces;
     private final static String BT = "businessTransaction";
     final Map<String, Trace> spans;
+    private final List<Trace> traces;
 
     public TracesAnalyzerElasticsearch(final List<Trace> traces) {
         this.spans = new HashMap<>();

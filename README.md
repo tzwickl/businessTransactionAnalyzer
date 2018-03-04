@@ -1,29 +1,15 @@
-Reads Jaeger traces from a cassandra database, analyzes them in order to find all business transactions and attaches the found 
+# Business Transaction Detector
+
+Reads Jaeger traces from a datasource, analyzes them in order to find all business transactions and attaches the found 
 business transaction as a tag to the traces. 
 The tag is called `business_transaction` and can be found in the `tags` field within the trace.
 
-# Running the application
-
-Available arguments to pass to the application:
-```
-usage: jaegerBusinessTransactionDetector
- -b,--start <arg>      The start time in seconds (inclusive)
- -d,--database <arg>   The database to use (cassandra, elasticsearch)
- -e,--end <arg>        The end time in seconds (inclusive)
- -f,--follow <arg>     Poll every <arg> seconds
- -h,--host <arg>       The database host
- -k,--keyspace <arg>   The database keyspace name
- -s,--service <arg>    The service name to validate
-```
-
-Mandatory arguments are: `h, k, s, d`
-
-## Gradle 
+## Run with Gradle 
 Example of how to run the application with gradle:
 
-`./gradlew run -PappArgs="['-hlocalhost', '-kjaeger-span*', '-sAppFin', '-delasticsearch']"`
+`./gradlew run -PappArgs="['src/main/resources/config/application.yml']"`
 
-## Jar
+## Run as Jar
 
 To build the fat jar run the following gradle command:
 
@@ -34,15 +20,30 @@ Run the fat jar application with:
 
 `java -jar rocks.inspectit.jaeger.bt-all-1.0.jar -h localhost -k jaeger_v1_test -s AppFin -d elasticsearch`
 
-## Program Arguments
-### Start and end time
-`java -jar rocks.inspectit.jaeger.bt-all-1.0.jar -h localhost -k jaeger_v1_test -s AppFin -d elasticsearch -b 1512990660 -e 1512994660`
+## Application Properties
 
-Fetches and analyzes all traces where the start time is between `12/11/2017 @ 11:11am (UTC)` and `12/11/2017 @ 12:17pm (UTC)`.
+Available configuration properties in the application.yml:
+```
+kafka:
+  bootstrapServers: localhost:9092
+  groupId: businessTransactionAnalyzer
+  inputTopic: traces
+  outputTopic: businessTraces
 
-### Follow option
-`java -jar rocks.inspectit.jaeger.bt-all-1.0.jar -h localhost -k jaeger_v1_test -s AppFin -d elasticsearch -f 5`
+elasticsearch:
+  host: localhost
+  doc: jaeger-span-2017-12-09
+  port: 9200
+  scheme: html
 
-Fetches and analyzes all traces from the current start time on and repeats the process every 5 seconds.
-If new traces are found the start time is updated to the current one and the process is repeated until the program is stopped with `Ctr+c`.
-The follow option can also be combined with the start time if you want to specify a different start time than the current time.
+cassandra:
+ host: localhost
+ keyspace: traces
+
+database: kafka
+serviceName: AppFin
+
+startTime: 1512833158
+endTime: 1512933158
+interval: 1
+```

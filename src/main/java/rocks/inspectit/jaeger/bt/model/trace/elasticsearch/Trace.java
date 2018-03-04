@@ -39,7 +39,7 @@ public class Trace {
     @JsonProperty("startTimeMillis")
     Long startTimeMillis;
 
-    // Elasticsearch properties
+    // Kafka properties
     @JsonIgnore
     String UUID;
     @JsonIgnore

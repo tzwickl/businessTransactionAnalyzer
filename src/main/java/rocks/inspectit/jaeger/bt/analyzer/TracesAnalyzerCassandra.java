@@ -12,9 +12,8 @@ import static java.util.stream.Collectors.toList;
 
 public class TracesAnalyzerCassandra implements TracesAnalyzer {
     private static final Logger logger = LoggerFactory.getLogger(TracesAnalyzerCassandra.class);
-
-    private final List<Trace> traces;
     private final static String BT = "business_transaction";
+    private final List<Trace> traces;
     private final Map<Long, Trace> spans;
 
     public TracesAnalyzerCassandra(final List<Trace> traces) {
@@ -35,7 +34,7 @@ public class TracesAnalyzerCassandra implements TracesAnalyzer {
             this.setBusinessTransaction(trace, businessTransactionName);
         });
 
-        logger.info("Detected business transactions: " +  Arrays.deepToString(businessTransactions.toArray()));
+        logger.info("Detected business transactions: " + Arrays.deepToString(businessTransactions.toArray()));
     }
 
     public Long getLatestTimestamp() {

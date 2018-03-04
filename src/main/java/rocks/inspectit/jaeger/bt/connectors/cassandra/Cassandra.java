@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rocks.inspectit.jaeger.bt.connectors.IDatabase;
 import rocks.inspectit.jaeger.bt.model.trace.cassandra.Trace;
+import rocks.inspectit.jaeger.bt.model.trace.config.CassandraConfig;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,16 +21,14 @@ public class Cassandra implements IDatabase<Trace> {
 
     private Cluster cluster;
     private Session session;
-    private String keyspace;
 
     // Mappers
     private MappingManager manager;
     private Mapper<Trace> tracesMapper;
 
-    public Cassandra(final String host, final String keyspace) {
-        this.keyspace = keyspace;
-        this.cluster = Cluster.builder().addContactPoint(host).build();
-        this.session = this.cluster.connect(keyspace);
+    public Cassandra(CassandraConfig config) {
+        this.cluster = Cluster.builder().addContactPoint(config.getHost()).build();
+        this.session = this.cluster.connect(config.getKeyspace());
         this.manager = new MappingManager(session);
         this.createMappers();
     }
