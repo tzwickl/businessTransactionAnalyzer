@@ -4,10 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rocks.inspectit.jaeger.bt.analyzer.TracesAnalyzer;
 import rocks.inspectit.jaeger.bt.analyzer.TracesAnalyzerElasticsearch;
-import rocks.inspectit.jaeger.bt.connectors.IDatabase;
-import rocks.inspectit.jaeger.bt.connectors.cassandra.Cassandra;
-import rocks.inspectit.jaeger.bt.connectors.elasticsearch.Elasticsearch;
-import rocks.inspectit.jaeger.bt.connectors.kafka.Kafka;
+import rocks.inspectit.jaeger.connectors.IDatabase;
+import rocks.inspectit.jaeger.connectors.cassandra.Cassandra;
+import rocks.inspectit.jaeger.connectors.elasticsearch.Elasticsearch;
+import rocks.inspectit.jaeger.connectors.kafka.Kafka;
 import rocks.inspectit.jaeger.model.config.Configuration;
 import rocks.inspectit.jaeger.model.trace.kafka.Trace;
 
