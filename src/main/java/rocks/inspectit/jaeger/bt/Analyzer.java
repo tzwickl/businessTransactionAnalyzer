@@ -39,7 +39,7 @@ public class Analyzer {
                 logger.info("Using datasource " + ELASTICSEARCH);
                 break;
             case KAFKA:
-                datasource = new Kafka(configuration.getServiceName(), configuration.getKafka());
+                datasource = new Kafka(configuration.getKafka());
                 logger.info("Using datasource " + KAFKA);
                 break;
             default:
@@ -108,7 +108,7 @@ public class Analyzer {
 
         logger.info("Finished analyzing Traces");
 
-        database.updateTraces(traces);
+        database.saveTraces(traces);
 
         logger.info("Updated Traces in database");
         logger.info("###############_END_#################");
