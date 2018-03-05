@@ -25,7 +25,7 @@ public class TracesAnalyzerElasticsearch implements TracesAnalyzer {
         final Set<String> businessTransactions = new HashSet<>();
 
         this.traces.forEach(trace -> {
-            spans.put(trace.getSpanId(), trace);
+            spans.put(trace.getTraceId(), trace);
         });
 
         this.traces.forEach(trace -> {
@@ -43,6 +43,8 @@ public class TracesAnalyzerElasticsearch implements TracesAnalyzer {
 
     private String findBusinessTransactionName(Trace trace) {
         if (trace.getParentId().equals("0")) {
+            return trace.getOperationName();
+        } else if (trace.getTraceId().equals(trace.getParentId())) {
             return trace.getOperationName();
         } else {
             Trace parentTrace = this.getParentSpan(trace);
