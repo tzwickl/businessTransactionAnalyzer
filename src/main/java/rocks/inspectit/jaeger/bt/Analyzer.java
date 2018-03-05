@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rocks.inspectit.jaeger.bt.analyzer.TracesAnalyzer;
 import rocks.inspectit.jaeger.bt.analyzer.TracesAnalyzerElasticsearch;
-import rocks.inspectit.jaeger.connectors.IDatabase;
+import rocks.inspectit.jaeger.connectors.IDatasource;
 import rocks.inspectit.jaeger.connectors.cassandra.Cassandra;
 import rocks.inspectit.jaeger.connectors.elasticsearch.Elasticsearch;
 import rocks.inspectit.jaeger.connectors.kafka.Kafka;
@@ -27,23 +27,23 @@ public class Analyzer {
     }
 
     public int start() {
-        IDatabase database = null;
+        IDatasource datasource = null;
 
         switch (configuration.getInput()) {
             case CASSANDRA:
-                database = new Cassandra(configuration.getCassandra());
-                logger.info("Using database " + CASSANDRA);
+                datasource = new Cassandra(configuration.getCassandra());
+                logger.info("Using datasource " + CASSANDRA);
                 break;
             case ELASTICSEARCH:
-                database = new Elasticsearch(configuration.getElasticsearch());
-                logger.info("Using database " + ELASTICSEARCH);
+                datasource = new Elasticsearch(configuration.getElasticsearch());
+                logger.info("Using datasource " + ELASTICSEARCH);
                 break;
             case KAFKA:
-                database = new Kafka(configuration.getServiceName(), configuration.getKafka());
-                logger.info("Using database " + KAFKA);
+                datasource = new Kafka(configuration.getServiceName(), configuration.getKafka());
+                logger.info("Using datasource " + KAFKA);
                 break;
             default:
-                logger.error(configuration.getInput() + " is not a known database!");
+                logger.error(configuration.getInput() + " is not a known datasource!");
                 return 1;
         }
 
@@ -64,7 +64,7 @@ public class Analyzer {
         }
 
         if (follow == null) {
-            run(database, configuration.getServiceName(), startTime, endTime);
+            run(datasource, configuration.getServiceName(), startTime, endTime);
         } else {
             if (startTime == null) {
                 startTime = System.currentTimeMillis() * 1000;
@@ -72,7 +72,7 @@ public class Analyzer {
             }
             try {
                 while (true) {
-                    startTime = run(database, configuration.getServiceName(), startTime, null) + 1;
+                    startTime = run(datasource, configuration.getServiceName(), startTime, null) + 1;
                     Thread.sleep(follow);
                 }
             } catch (InterruptedException e) {
@@ -83,7 +83,7 @@ public class Analyzer {
         return 0;
     }
 
-    private Long run(IDatabase database, String serviceName, Long startTime, Long endTime) {
+    private Long run(IDatasource database, String serviceName, Long startTime, Long endTime) {
         logger.info("###############_START_###############");
         List<Trace> traces;
 
@@ -108,7 +108,7 @@ public class Analyzer {
 
         logger.info("Finished analyzing Traces");
 
-        database.saveTraces(traces);
+        database.updateTraces(traces);
 
         logger.info("Updated Traces in database");
         logger.info("###############_END_#################");

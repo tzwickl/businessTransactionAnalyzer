@@ -6,9 +6,9 @@ kafka:
 
 elasticsearch:
   host: localhost
-  doc: jaeger-span-2017-12-09
+  index: jaeger-span-2017-12-09
   port: 9200
-  scheme: html
+  scheme: http
 
 cassandra:
  host: localhost
