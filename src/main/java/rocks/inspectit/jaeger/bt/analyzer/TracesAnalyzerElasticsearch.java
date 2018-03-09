@@ -13,25 +13,27 @@ import static rocks.inspectit.jaeger.model.Constants.BT_TAG;
 
 public class TracesAnalyzerElasticsearch implements TracesAnalyzer {
     private static final Logger logger = LoggerFactory.getLogger(TracesAnalyzerElasticsearch.class);
-    final Map<String, Trace> spans;
     private final List<Trace> traces;
 
     public TracesAnalyzerElasticsearch(final List<Trace> traces) {
-        this.spans = new HashMap<>();
         this.traces = traces;
     }
 
     public void findBusinessTransactions() {
         final Set<String> businessTransactions = new HashSet<>();
+        Map<String, List<Trace>> groupedTraces = new HashMap<>();
 
         this.traces.forEach(trace -> {
-            spans.put(trace.getTraceId(), trace);
+            if (!groupedTraces.containsKey(trace.getTraceId())) {
+                groupedTraces.put(trace.getTraceId(), new ArrayList<Trace>());
+            }
+            groupedTraces.get(trace.getTraceId()).add(trace);
         });
 
-        this.traces.forEach(trace -> {
-            String businessTransactionName = this.findBusinessTransactionName(trace);
+        groupedTraces.forEach((spanId, span) -> {
+            String businessTransactionName = this.findBusinessTransactionName(span);
             businessTransactions.add(businessTransactionName);
-            this.setBusinessTransaction(trace, businessTransactionName);
+            this.setBusinessTransaction(span, businessTransactionName);
         });
 
         logger.info("Detected business transactions: " + Arrays.deepToString(businessTransactions.toArray()));
@@ -41,51 +43,41 @@ public class TracesAnalyzerElasticsearch implements TracesAnalyzer {
         return this.traces.stream().max(Comparator.comparing(Trace::getStartTime)).get().getStartTime();
     }
 
-    private String findBusinessTransactionName(Trace trace) {
-        if (trace.getParentId().equals("0")) {
-            return trace.getOperationName();
-        } else if (trace.getTraceId().equals(trace.getParentId())) {
-            return trace.getOperationName();
-        } else {
-            Trace parentTrace = this.getParentSpan(trace);
-            if (parentTrace == null) {
-                return "";
+    private String findBusinessTransactionName(List<Trace> span) {
+        if (span.isEmpty()) {
+            return "";
+        }
+        for (int i = 0; i < span.size(); i++) {
+            if (span.get(i).getParentId().equals("0")) {
+                return span.get(i).getOperationName();
             }
-            return this.findBusinessTransactionName(parentTrace);
         }
+        return span.get(0).getOperationName();
     }
 
-    private Trace getParentSpan(Trace childTrace) {
-        if (!this.spans.containsKey(childTrace.getParentId())) {
-            logger.warn("No parent span with ID " + childTrace.getParentId()
-                    + " found for child span with ID " + childTrace.getSpanId());
-            return null;
-        } else {
-            return this.spans.get(childTrace.getParentId());
-        }
-    }
+    private void setBusinessTransaction(List<Trace> span, String businessTransaction) {
+        for (int i = 0; i < span.size(); i++) {
+            List<TraceKeyValue> tags = span.get(i).getTags();
 
-    private void setBusinessTransaction(Trace trace, String businessTransaction) {
-        List<TraceKeyValue> tags = trace.getTags();
+            TraceKeyValue businessTransactionTag = new TraceKeyValue();
+            businessTransactionTag.setKey(BT_TAG);
+            businessTransactionTag.setType("string");
+            businessTransactionTag.setValue(businessTransaction);
 
-        TraceKeyValue businessTransactionTag = new TraceKeyValue();
-        businessTransactionTag.setKey(BT_TAG);
-        businessTransactionTag.setType("string");
-        businessTransactionTag.setValue(businessTransaction);
-
-        if (tags.isEmpty()) {
-            tags.add(businessTransactionTag);
-        } else {
-            Stream<TraceKeyValue> foundTags = tags.stream().filter(tag -> {
-                return tag.getKey().equals(BT_TAG);
-            });
-            List<TraceKeyValue> matchedTags = foundTags.collect(toList());
-            if (matchedTags.size() > 0) {
-                matchedTags.forEach(tag -> {
-                    tag.setValue(businessTransaction);
-                });
-            } else {
+            if (tags.isEmpty()) {
                 tags.add(businessTransactionTag);
+            } else {
+                Stream<TraceKeyValue> foundTags = tags.stream().filter(tag -> {
+                    return tag.getKey().equals(BT_TAG);
+                });
+                List<TraceKeyValue> matchedTags = foundTags.collect(toList());
+                if (matchedTags.size() > 0) {
+                    matchedTags.forEach(tag -> {
+                        tag.setValue(businessTransaction);
+                    });
+                } else {
+                    tags.add(businessTransactionTag);
+                }
             }
         }
     }

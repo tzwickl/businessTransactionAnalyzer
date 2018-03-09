@@ -2,8 +2,8 @@ group 'rocks.inspectit.jaeger'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
-apply plugin: 'application'
 apply plugin: 'idea'
+apply plugin: 'application'
 
 // tag::repositories[]
 repositories {
@@ -16,6 +16,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 version = 1.0
 def mainClass = 'rocks.inspectit.jaeger.bt.Main'
+mainClassName = 'rocks.inspectit.jaeger.bt.Main'
 
 dependencies {
     compile 'org.projectlombok:lombok:1.16.18'

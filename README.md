@@ -13,7 +13,7 @@ Example of how to run the application with gradle:
 
 To build the fat jar run the following gradle command:
 
-`./gradlew fatJar `
+`./gradlew fatJar`
 
 The fat jar can now be found in the `build/libs` directory.
 Run the fat jar application with:
